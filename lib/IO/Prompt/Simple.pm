@@ -2,7 +2,7 @@ package IO::Prompt::Simple;
 
 use strict;
 use warnings;
-use 5.008_001;
+use 5.006001;
 use base 'Exporter';
 
 our $VERSION = '0.01';
