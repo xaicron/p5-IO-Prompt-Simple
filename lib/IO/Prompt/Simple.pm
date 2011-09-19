@@ -119,15 +119,125 @@ __END__
 
 =head1 NAME
 
-IO::Prompt::Simple -
+IO::Prompt::Simple - provide a simple user input
 
 =head1 SYNOPSIS
 
+  # foo.pl
   use IO::Prompt::Simple;
+
+  my $answer = prompt 'some question...';
+  print "answer: $answer\n";
+
+  # display prompt message, and wait your input.
+  $ foo.pl
+  some question: foo[Enter]
+  answer: foo
 
 =head1 DESCRIPTION
 
-IO::Prompt::Simple is
+IO::Prompt::Simple is porting L<< ExtUtils::MakeMaker >>'s prompt() function.
+
+Added a few more useful features.
+
+THIS MODULE IS ALPHA LEVEL INTERFACE!!
+
+=head1 FUNCTIONS
+
+=head2 prompt($message, [$default, $option])
+
+Display prompt message and wait your input.
+
+  $answer = prompt $message;
+
+Sets default value
+
+  $answer = prompt 'sets default', 'def';
+  is $answer, 'def';
+
+Display like are:
+
+  sets default [def]: [Enter]
+  ...
+
+supported options are:
+
+=over
+
+=item anyone: ARRAYREF
+
+Choose any one.
+
+  $answer = prompt 'choose', undef, { anyone => [qw/y n/] };
+
+Display like are:
+
+  choose (y/n) : [Enter]
+  # Please answer `y` or `n`
+  choose (y/n) : y[Enter]
+  ...
+
+=item regexp: STR | REGEXP
+
+Sets regexp for answer.
+
+  $answer = prompt 'regexp', undef, { regexp => '[0-9]{4}' };
+
+Display like are:
+
+  regexp : foo[Enter]
+  # Please answer pattern (?^:[0-9{4}])
+  regexp : 1234
+  ...
+
+It C<< regexp >> and C<< anyone >> is exclusive (C<< anyone >> is priority).
+
+=item ignore_case: BOOL
+
+Ignore case for anyone or regexp.
+
+  # passed `Y` or `N`
+  $answer = prompt 'ignore_case', undef, {
+      anyone      => [qw/y n/],
+      ignore_case => 1,
+  };
+
+=item use_default: BOOL
+
+Force using for default value.
+If not specified defaults to an empty string.
+
+  $answer = prompt 'use default', 'foo', { use_default => 1 };
+  is $answer, 'foo';
+
+I think, CLI's C<< --force >> like option friendly.
+
+=item input: FILEHANDLE
+
+Sets input file handle (default: STDIN)
+
+  $answer = prompt 'input from DATA', undef, { input => *DATA };
+  is $answer, 'foobar';
+  __DATA__
+  foobar
+
+=item output: FILEHANDLE
+
+Sets output file handle (default: STDOUT)
+
+  $answer = prompt 'output for file', undef, { output => $fh };
+
+=back
+
+=head1 NOTE
+
+If prompt() detects that it is not running interactively
+and there is nothing on C<< $input >>
+or if the C<< $ENV{PERL_IOPS_USE_DEFAULT} >> is set to true
+or C<< use_default >> option is set to true,
+the C<< $default >> will be used without prompting.
+
+This prevents automated processes from blocking on user input.
 
 =head1 AUTHOR
 

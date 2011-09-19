@@ -31,6 +31,10 @@ all_pod_files_spelling_ok('lib');
 
 __DATA__
 IO::Prompt::Simple
+STDIN
+STDOUT
+CLI's
+STR
 
 # personal section
 xaicron
