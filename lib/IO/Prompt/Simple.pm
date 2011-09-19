@@ -39,6 +39,11 @@ sub prompt {
         $regexp = qr/\A $regexp \Z/x;
     }
 
+    my $encoder = $opts->{encode} ? do {
+        require Encode;
+        Encode::find_encoding($opts->{encode});
+    } : undef;
+
     # autoflush and reset format for output
     my $org_out = select $out;
     local $| = 1;
@@ -64,6 +69,7 @@ sub prompt {
         }
 
         $answer = $default if !defined $answer || $answer eq '';
+        $answer = $encoder->decode($answer) if defined $encoder;
         if ($check_anyone) {
             last if $exclusive_map->{$ignore_case ? lc $answer : $answer};
             $answer = undef;
@@ -226,6 +232,10 @@ Sets input file handle (default: STDIN)
 Sets output file handle (default: STDOUT)
 
   $answer = prompt 'output for file', undef, { output => $fh };
+
+=item encode: STR | Encoder
+
+Sets encodeing. If specified, returned a decoded string.
 
 =back
 

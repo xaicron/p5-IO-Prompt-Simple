@@ -4,9 +4,10 @@ use Module::Install::AuthorTests;
 name 'IO-Prompt-Simple';
 all_from 'lib/IO/Prompt/Simple.pm';
 
-#requires '';
+recommends 'Encode';
 
 test_requires 'Test::More', 0.96;
+test_requires 'Test::Requires', 0.06;
 
 tests join q{ }, map { sprintf 't%s.t', '/*' x $_ } 1..3;
 author_tests 'xt';
