@@ -52,6 +52,7 @@ sub prompt {
         print {$out} "$message $dispaly_default";
         if ($ENV{PERL_IOPS_USE_DEFAULT} || $use_default || (!$isa_tty && eof $in)) {
             print {$out} "$default\n";
+            $answer = $default;
             last;
         }
         $answer = <$in>;
@@ -62,15 +63,15 @@ sub prompt {
             print {$out} "\n";
         }
 
+        $answer = $default if !defined $answer || $answer eq '';
         if ($check_anyone) {
-            last if defined $answer
-                && $exclusive_map->{$ignore_case ? lc $answer : $answer};
-            $answer = undef;;
+            last if $exclusive_map->{$ignore_case ? lc $answer : $answer};
+            $answer = undef;
             print {$out} $hint;
             next;
         }
         elsif ($regexp) {
-            last if defined $answer && $answer =~ $regexp;
+            last if $answer =~ $regexp;
             $answer = undef;
             print {$out} $hint;
             next;
@@ -78,7 +79,6 @@ sub prompt {
         last;
     }
 
-    $answer = $default if !defined $answer || $answer eq '';
     return $answer;
 }
 

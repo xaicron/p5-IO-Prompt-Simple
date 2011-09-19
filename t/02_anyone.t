@@ -46,9 +46,7 @@ test_prompt(
         anyone => [qw/y n/],
     },
     prompt  => 'prompt (y/n) [n]: # Please answer `y` or `n`
-prompt (y/n) [n]: # Please answer `y` or `n`
-prompt (y/n) [n]: n
-',
+prompt (y/n) [n]: ',
     desc    => 'anyone (y/n), miss match, default: n',
 );
 
