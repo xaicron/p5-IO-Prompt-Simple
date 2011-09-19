@@ -26,18 +26,6 @@ prompt (y/n) : ',
 );
 
 test_prompt(
-    input  => 'foo',
-    answer => '',
-    opts   => {
-        anyone => [qw/y n/],
-    },
-    prompt => 'prompt (y/n) : # Please answer `y` or `n`
-prompt (y/n) : 
-',
-    desc   => 'anyone (y/n), miss match',
-);
-
-test_prompt(
     input   => 'foo
 ',
     answer  => 'n',

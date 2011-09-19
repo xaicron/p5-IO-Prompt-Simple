@@ -32,7 +32,7 @@ test_prompt(
         regexp => '[abc]',
     },
     prompt => qr'prompt \[a\]: # Please answer pattern \(.+\[abc]\)
-prompt \[a\]: a
+prompt \[a\]: 
 ',
     desc   => 'regexp: [abc]',
 );

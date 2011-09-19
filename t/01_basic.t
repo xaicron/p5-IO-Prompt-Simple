@@ -81,7 +81,7 @@ do {
         input   => undef,
         answer  => 'foo',
         default => 'foo',
-        prompt  => "prompt [foo]: foo\n",
+        prompt  => "prompt [foo]: \n",
         desc    => 'input is undef with default',
     );
 };

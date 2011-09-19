@@ -10,10 +10,11 @@ our @EXPORT = 'test_prompt';
 
 sub test_prompt {
     my %specs = @_;
-    my ($input, $answer, $prompt, $desc, $default, $opts) =
-        @specs{qw/input answer prompt desc default opts/};
+    my ($input, $answer, $prompt, $desc, $default, $opts, $isa_tty) =
+        @specs{qw/input answer prompt desc default opts isa_tty/};
 
     $opts ||= {};
+    $isa_tty = defined $isa_tty ? $isa_tty : 1;
     $input = "$input\n" if defined $input;
 
     # using PerlIO::scalar
@@ -25,6 +26,9 @@ sub test_prompt {
 
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $line = (caller)[2];
+
+    no warnings 'redefine';
+    local *IO::Prompt::Simple::_isa_tty = sub { $isa_tty };
 
     note "$desc at line $line"; do {
         my $got = prompt 'prompt', $default, $opts;

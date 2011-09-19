@@ -63,6 +63,7 @@ sub prompt {
         $answer = <$in>;
         if (defined $answer) {
             chomp $answer;
+            print {$out} "$answer\n" unless $isa_tty;
         }
         else {
             print {$out} "\n";
