@@ -10,13 +10,19 @@ our $VERSION = '0.01';
 our @EXPORT = 'prompt';
 
 sub prompt {
-    my ($message, $default, $opts) = @_;
-    _croak('Usage: prompt($message, [$default, $opts])') unless defined $message;
+    my ($message, $opts) = @_;
+    _croak('Usage: prompt($message, [$default_or_opts])') unless defined $message;
+    my $default;
+    if (ref $opts eq 'HASH') {
+        $default = $opts->{default};
+    }
+    else {
+        ($default, $opts) = ($opts, {});
+    }
 
     my $dispaly_default = defined $default ? "[$default]: " : ': ';
     $default = defined $default ? $default : '';
 
-    $opts ||= {};
     my $in  = _is_fh($opts->{input})  ? $opts->{input}  : *STDIN;
     my $out = _is_fh($opts->{output}) ? $opts->{output} : *STDOUT;
 
@@ -151,16 +157,21 @@ THIS MODULE IS ALPHA LEVEL INTERFACE!!
 
 =head1 FUNCTIONS
 
-=head2 prompt($message, [$default, $option])
+=head2 prompt($message, [$default_or_option])
 
 Display prompt message and wait your input.
 
   $answer = prompt $message;
 
-Sets default value
+Sets default value:
 
-  $answer = prompt 'sets default', 'def';
-  is $answer, 'def';
+  $answer = prompt 'sets default', 'default';
+  is $answer, 'default';
+
+or
+
+  $answer = prompt 'sets default', { default => 'default' };
+  is $answer, 'default';
 
 Display like are:
 
@@ -171,11 +182,18 @@ supported options are:
 
 =over
 
+=item default: SCALAR
+
+Sets default value.
+
+  $answer = prompt 'sets default', { default => 'default' };
+  is $answer, 'default';
+
 =item anyone: ARRAYREF
 
 Choose any one.
 
-  $answer = prompt 'choose', undef, { anyone => [qw/y n/] };
+  $answer = prompt 'choose', { anyone => [qw/y n/] };
 
 Display like are:
 
@@ -188,7 +206,7 @@ Display like are:
 
 Sets regexp for answer.
 
-  $answer = prompt 'regexp', undef, { regexp => '[0-9]{4}' };
+  $answer = prompt 'regexp', { regexp => '[0-9]{4}' };
 
 Display like are:
 
@@ -204,7 +222,7 @@ It C<< regexp >> and C<< anyone >> is exclusive (C<< anyone >> is priority).
 Ignore case for anyone or regexp.
 
   # passed `Y` or `N`
-  $answer = prompt 'ignore_case', undef, {
+  $answer = prompt 'ignore_case', {
       anyone      => [qw/y n/],
       ignore_case => 1,
   };
@@ -214,7 +232,10 @@ Ignore case for anyone or regexp.
 Force using for default value.
 If not specified defaults to an empty string.
 
-  $answer = prompt 'use default', 'foo', { use_default => 1 };
+  $answer = prompt 'use default', {
+      default     => 'foo',
+      use_default => 1,
+  };
   is $answer, 'foo';
 
 I think, CLI's C<< --force >> like option friendly.
@@ -223,7 +244,7 @@ I think, CLI's C<< --force >> like option friendly.
 
 Sets input file handle (default: STDIN)
 
-  $answer = prompt 'input from DATA', undef, { input => *DATA };
+  $answer = prompt 'input from DATA', { input => *DATA };
   is $answer, 'foobar';
   __DATA__
   foobar
@@ -232,7 +253,7 @@ Sets input file handle (default: STDIN)
 
 Sets output file handle (default: STDOUT)
 
-  $answer = prompt 'output for file', undef, { output => $fh };
+  $answer = prompt 'output for file', { output => $fh };
 
 =item encode: STR | Encoder
 

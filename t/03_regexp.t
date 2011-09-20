@@ -25,11 +25,11 @@ test_prompt(
 );
 
 test_prompt(
-    input   => 'd',
-    answer  => 'a',
-    default => 'a',
-    opts    => {
-        regexp => '[abc]',
+    input  => 'd',
+    answer => 'a',
+    opts   => {
+        default => 'a',
+        regexp  => '[abc]',
     },
     prompt => qr'prompt \[a\]: # Please answer pattern \(.+\[abc]\)
 prompt \[a\]: 
@@ -38,9 +38,9 @@ prompt \[a\]:
 );
 
 test_prompt(
-    input   => '1234',
-    answer  => '1234',
-    opts    => {
+    input  => '1234',
+    answer => '1234',
+    opts   => {
         regexp => qr/[0-9]{4}/,
     },
     prompt => 'prompt : ',
@@ -48,10 +48,10 @@ test_prompt(
 );
 
 test_prompt(
-    input   => '1234',
-    answer  => '3456',
-    default => '3456',
-    opts    => {
+    input  => '1234',
+    answer => '3456',
+    opts   => {
+        default     => '3456',
         regexp      => qr/[0-9]{4}/,
         use_default => 1,
     },

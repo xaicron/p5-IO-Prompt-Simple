@@ -26,16 +26,16 @@ prompt (y/n) : ',
 );
 
 test_prompt(
-    input   => 'foo
+    input  => 'foo
 ',
-    answer  => 'n',
-    default => 'n',
-    opts    => {
-        anyone => [qw/y n/],
+    answer => 'n',
+    opts   => {
+        default => 'n',
+        anyone  => [qw/y n/],
     },
-    prompt  => 'prompt (y/n) [n]: # Please answer `y` or `n`
+    prompt => 'prompt (y/n) [n]: # Please answer `y` or `n`
 prompt (y/n) [n]: ',
-    desc    => 'anyone (y/n), miss match, default: n',
+    desc   => 'anyone (y/n), miss match, default: n',
 );
 
 test_prompt(
@@ -50,16 +50,16 @@ test_prompt(
 );
 
 test_prompt(
-    input   => 'N',
-    answer  => 'y',
-    default => 'y',
-    opts    => {
+    input  => 'N',
+    answer => 'y',
+    opts   => {
+        default     => 'y',
         anyone      => [qw/y n/],
         use_default => 1,
     },
-    prompt  => 'prompt (y/n) [y]: y
+    prompt => 'prompt (y/n) [y]: y
 ',
-    desc    => 'anyone (y/n), use_default: 1',
+    desc   => 'anyone (y/n), use_default: 1',
 );
 
 done_testing;
