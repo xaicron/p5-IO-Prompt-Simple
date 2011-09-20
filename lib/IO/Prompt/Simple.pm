@@ -29,14 +29,34 @@ sub prompt {
     my $ignore_case = $opts->{ignore_case} ? 1 : 0;
     my ($regexp, $hint);
     my ($exclusive_map, $check_anyone) = ({}, 0);
-    if (ref $opts->{anyone} eq 'ARRAY' && @{$opts->{anyone}}) {
-        my @anyone = _uniq(@{$opts->{anyone}});
-        for my $stuff (@anyone) {
-            $exclusive_map->{$ignore_case ? lc $stuff : $stuff} = 1;
+    if (my $anyone = $opts->{anyone}) {
+        if (ref $anyone eq 'ARRAY' && @$anyone) {
+            $check_anyone = 1;
+            my @stuffs = _uniq(@$anyone);
+            for my $stuff (@stuffs) {
+                $exclusive_map->{$ignore_case ? lc $stuff : $stuff} = $stuff;
+            }
+            $hint     = sprintf "# Please answer %s\n", join ' or ', map qq{`$_`}, @stuffs;
+            $message .= sprintf ' (%s)', join '/', @stuffs;
         }
-        $check_anyone = 1;
-        $hint     = sprintf "# Please answer %s\n", join ' or ', map qq{`$_`}, @anyone;
-        $message .= sprintf ' (%s)', join '/', @anyone;
+        elsif (ref $anyone eq 'HASH' && %$anyone) {
+            $check_anyone = 1;
+            my @keys = sort { $a cmp $b } keys %$anyone;
+            my $max = 0;
+            for my $key (@keys) {
+                $max = length $key > $max ? length $key : $max;
+                $exclusive_map->{$ignore_case ? lc $key : $key} = $anyone->{$key};
+            }
+            $hint = sprintf "# Please answer %s\n", join ' or ',map qq{`$_`}, @keys;
+            if ($opts->{verbose}) {
+                $message = sprintf '%s%s', join('', map {
+                    sprintf "# %-*s: %s\n", $max, $_, $anyone->{$_}
+                } @keys), $message;
+            }
+            else {
+                $message .= sprintf ' (%s)', join '/', @keys;
+            }
+        }
     }
     elsif ($opts->{regexp}) {
         $regexp = ref $opts->{regexp} eq 'Regexp' ? $opts->{regexp}
@@ -78,7 +98,10 @@ sub prompt {
         $answer = $default if !defined $answer || $answer eq '';
         $answer = $encoder->decode($answer) if defined $encoder;
         if ($check_anyone) {
-            last if $exclusive_map->{$ignore_case ? lc $answer : $answer};
+            if (exists $exclusive_map->{$ignore_case ? lc $answer : $answer}) {
+                $answer = $exclusive_map->{$ignore_case ? lc $answer : $answer};
+                last;
+            }
             $answer = undef;
             print {$out} $hint;
             next;
@@ -189,7 +212,7 @@ Sets default value.
   $answer = prompt 'sets default', { default => 'default' };
   is $answer, 'default';
 
-=item anyone: ARRAYREF
+=item anyone: ARRAYREF | HASHREF
 
 Choose any one.
 
@@ -200,6 +223,32 @@ Display like are:
   choose (y/n) : [Enter]
   # Please answer `y` or `n`
   choose (y/n) : y[Enter]
+  ...
+
+If you specify HASHREF, returned value is HASHREF's value.
+
+  $answer = prompt 'choose', { anyone => { y => 1, n => 0 } };
+  is $answer, 1; # when you input is 'y'
+
+And, when you specify the verbose option, you can tell the user more information.
+
+  $answer = prompt 'choose your homepage', {
+      anyone => {
+          google => 'http://google.com/',
+          yahoo  => 'http://yahoo.com/',
+          bing   => 'http://bing.com/',
+      },
+      verbose => 1,
+  };
+
+Display like are:
+
+  # bing  : http://bing.com/
+  # google: http://google.com/
+  # yahoo : http://yahoo.com/
+  choose your homepage : [Enter]
+  # Please answer `bing` or `google` or `yahoo`
+  choose your homepage : google[Enter]
   ...
 
 =item regexp: STR | REGEXP

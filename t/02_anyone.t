@@ -40,7 +40,7 @@ prompt (y/n) [n]: ',
 
 test_prompt(
     input  => 'N',
-    answer => 'N',
+    answer => 'n',
     opts   => {
         anyone      => [qw/y n/],
         ignore_case => 1,
