@@ -198,7 +198,7 @@ or
 
 Display like are:
 
-  sets default [def]: [Enter]
+  sets default [default]: [Enter]
   ...
 
 supported options are:
