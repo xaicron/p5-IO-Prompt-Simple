@@ -20,7 +20,7 @@ sub prompt {
         ($default, $opts) = ($opts, {});
     }
 
-    my $dispaly_default = defined $default ? "[$default]: " : ': ';
+    my $display_default = defined $default ? "[$default]: " : ': ';
     $default = defined $default ? $default : '';
 
     my $in  = _is_fh($opts->{input})  ? $opts->{input}  : *STDIN;
@@ -60,7 +60,7 @@ sub prompt {
     my $use_default = $opts->{use_default} ? 1 : 0;
     my $answer;
     while (1) {
-        print {$out} "$message $dispaly_default";
+        print {$out} "$message $display_default";
         if ($ENV{PERL_IOPS_USE_DEFAULT} || $use_default || (!$isa_tty && eof $in)) {
             print {$out} "$default\n";
             $answer = $default;
@@ -257,7 +257,7 @@ Sets output file handle (default: STDOUT)
 
 =item encode: STR | Encoder
 
-Sets encodeing. If specified, returned a decoded string.
+Sets encoding. If specified, returned a decoded string.
 
 =back
 
