@@ -50,7 +50,7 @@ sub prompt {
             $hint = sprintf "# Please answer %s\n", join ' or ',map qq{`$_`}, @keys;
             if ($opts->{verbose}) {
                 $message = sprintf '%s%s', join('', map {
-                    sprintf "# %-*s: %s\n", $max, $_, $anyone->{$_}
+                    sprintf "# %-*s: %s\n", $max + 2, "($_)", $anyone->{$_}
                 } @keys), $message;
             }
             else {

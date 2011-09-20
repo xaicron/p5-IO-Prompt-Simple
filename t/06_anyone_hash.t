@@ -43,8 +43,8 @@ test_prompt(
         anyone  => { foo => 'hoge', bar => 'fuga' },
         verbose => 1,
     },
-    prompt => '# bar: fuga
-# foo: hoge
+    prompt => '# (bar): fuga
+# (foo): hoge
 prompt : ',
     desc   => 'anyone: (bar/foo), verbose: 1, answer: foo',
 );
@@ -56,8 +56,8 @@ test_prompt(
         anyone  => { fo => 'hoge', bar => 'fuga' },
         verbose => 1,
     },
-    prompt => '# bar: fuga
-# fo : hoge
+    prompt => '# (bar): fuga
+# (fo) : hoge
 prompt : ',
     desc   => 'anyone: (bar/foo), verbose: 1, answer: foo, format',
 );
@@ -70,11 +70,11 @@ foo',
         anyone  => { foo => 'hoge', bar => 'fuga' },
         verbose => 1,
     },
-    prompt => '# bar: fuga
-# foo: hoge
+    prompt => '# (bar): fuga
+# (foo): hoge
 prompt : # Please answer `bar` or `foo`
-# bar: fuga
-# foo: hoge
+# (bar): fuga
+# (foo): hoge
 prompt : ',
     desc   => 'anyone: (bar/foo), retry: 1, answer: foo',
 );
@@ -87,8 +87,8 @@ test_prompt(
         verbose     => 1,
         ignore_case => 1,
     },
-    prompt => '# bar: fuga
-# foo: hoge
+    prompt => '# (bar): fuga
+# (foo): hoge
 prompt : ',
     desc   => 'anyone: (bar/foo), verbose:1, ignore_case: 1, answer: foo',
 );
