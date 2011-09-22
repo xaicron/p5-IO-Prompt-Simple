@@ -1,4 +1,8 @@
 Revision history for Perl extension IO::Prompt::Simple
 
+0.02  Fri Sep 23 01:36:12 2011
+    - added `yn` option
+    - support Hash::MultiValue instance for anyone
+
 0.01  Wed Sep 21 01:34:54 2011
     - original version
