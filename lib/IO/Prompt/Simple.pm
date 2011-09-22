@@ -20,6 +20,12 @@ sub prompt {
         ($default, $opts) = ($opts, {});
     }
 
+    if ($opts->{yn}) {
+        require Hash::MultiValue; # for preserve the order of keys.
+        $opts->{anyone}       = Hash::MultiValue->new(y => 1, n => 0);
+        $opts->{ignore_case}  = 1 unless exists $opts->{ignore_case};
+    }
+
     my $display_default = defined $default ? "[$default]: " : ': ';
     $default = defined $default ? $default : '';
 
@@ -39,9 +45,9 @@ sub prompt {
             $hint     = sprintf "# Please answer %s\n", join ' or ', map qq{`$_`}, @stuffs;
             $message .= sprintf ' (%s)', join '/', @stuffs;
         }
-        elsif (ref $anyone eq 'HASH' && %$anyone) {
+        elsif (ref $anyone eq 'HASH' || ref $anyone eq 'Hash::MultiValue' && %$anyone) {
             $check_anyone = 1;
-            my @keys = sort { $a cmp $b } keys %$anyone;
+            my @keys = ref $anyone eq 'Hash::MultiValue' ? $anyone->keys : sort { $a cmp $b } keys %$anyone;
             my $max = 0;
             for my $key (@keys) {
                 $max = length $key > $max ? length $key : $max;
@@ -276,6 +282,16 @@ Ignore case for anyone or regexp.
       ignore_case => 1,
   };
 
+=item yn: BOOL
+
+Shortcut of C<< { anyone => { y => 1, n => 0 }, ignore_case => 1 } >>.
+
+  $answer = prompt 'are you ok?', { yn => 1 };
+
+Display like are:
+
+  are you ok? (y/n) : y[Enter]
+
 =item use_default: BOOL
 
 Force using for default value.
@@ -309,6 +325,17 @@ Sets output file handle (default: STDOUT)
 Sets encoding. If specified, returned a decoded string.
 
 =back
+
+=head1 TIPS
+
+=head2 Preserve the order of keys
+
+You can use L<< Hash::MultiValue >>.
+
+  $answer = prompt 'foo', { anyone => { b => 1, c => 2, a => 4 } }; # prompring => `foo (a/b/c) : `
+  $answer = prompt 'foo', {
+      anyone => Hash::MultiValue->new(b => 1, c => 2, a => 4)
+  }; # prompring => `foo (b/c/a) : `
 
 =head1 NOTE
 

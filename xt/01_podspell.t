@@ -36,6 +36,7 @@ STDOUT
 CLI's
 STR
 HASHREF's
+yn
 
 # personal section
 xaicron
