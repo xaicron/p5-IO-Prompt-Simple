@@ -240,7 +240,7 @@ Sets default value.
   $answer = prompt 'sets default', { default => 'default' };
   is $answer, 'default';
 
-=item anyone: ARRAYREF | HASHREF
+=item anyone: ARRAYREF | HASHREF | REF-ARRAYREF | Hash::MultiValue
 
 Choose any one.
 
@@ -279,6 +279,17 @@ Display like are:
   choose your homepage : google[Enter]
   ...
 
+If you want preserve the order of keys, you can use L<< Hash::MultiValue >>.
+
+  $answer = prompt 'foo', { anyone => { b => 1, c => 2, a => 4 } }; # prompring => `foo (a/b/c) : `
+  $answer = prompt 'foo', {
+      anyone => Hash::MultiValue->new(b => 1, c => 2, a => 4)
+  }; # prompring => `foo (b/c/a) : `
+
+Or, you can use REF-ARRAYREF.
+
+  $answer = prompt 'foo', { anyone => \[b => 1, c => 2, a => 4] };
+
 =item regexp: STR | REGEXP
 
 Sets regexp for answer.
@@ -306,7 +317,7 @@ Ignore case for anyone or regexp.
 
 =item yn: BOOL
 
-Shortcut of C<< { anyone => { y => 1, n => 0 }, ignore_case => 1 } >>.
+Shortcut of C<< { anyone => \[ y => 1, n => 0 ], ignore_case => 1 } >>.
 
   $answer = prompt 'are you ok?', { yn => 1 };
 
@@ -347,17 +358,6 @@ Sets output file handle (default: STDOUT)
 Sets encoding. If specified, returned a decoded string.
 
 =back
-
-=head1 TIPS
-
-=head2 Preserve the order of keys
-
-You can use L<< Hash::MultiValue >>.
-
-  $answer = prompt 'foo', { anyone => { b => 1, c => 2, a => 4 } }; # prompring => `foo (a/b/c) : `
-  $answer = prompt 'foo', {
-      anyone => Hash::MultiValue->new(b => 1, c => 2, a => 4)
-  }; # prompring => `foo (b/c/a) : `
 
 =head1 NOTE
 

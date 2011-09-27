@@ -36,6 +36,7 @@ STDOUT
 CLI's
 STR
 HASHREF's
+ARRAYREF
 yn
 
 # personal section
