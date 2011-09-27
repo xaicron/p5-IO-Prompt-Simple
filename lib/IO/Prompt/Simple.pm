@@ -13,6 +13,7 @@ our @EXPORT = 'prompt';
 sub prompt {
     my ($message, $opts) = @_;
     _croak('Usage: prompt($message, [$default_or_opts])') unless defined $message;
+
     my $default;
     if (ref $opts eq 'HASH') {
         $default = $opts->{default};
@@ -20,71 +21,13 @@ sub prompt {
     else {
         ($default, $opts) = ($opts, {});
     }
-
-    if ($opts->{yn}) {
-        $opts->{anyone}       = \[y => 1, n => 0];
-        $opts->{ignore_case}  = 1 unless exists $opts->{ignore_case};
-    }
-
     my $display_default = defined $default ? "[$default]: " : ': ';
     $default = defined $default ? $default : '';
 
-    my $in  = _is_fh($opts->{input})  ? $opts->{input}  : *STDIN;
-    my $out = _is_fh($opts->{output}) ? $opts->{output} : *STDOUT;
+    my $stash = { message => $message };
+    _parse_option($opts, $stash);
 
-    my $ignore_case = $opts->{ignore_case} ? 1 : 0;
-    my ($regexp, $hint);
-    my ($exclusive_map, $check_anyone) = ({}, 0);
-    if (my $anyone = $opts->{anyone}) {
-        my $type = _anyone_type($anyone);
-        if ($type eq 'ARRAY') {
-            $check_anyone = 1;
-            my @stuffs = _uniq(@$anyone);
-            for my $stuff (@stuffs) {
-                $exclusive_map->{$ignore_case ? lc $stuff : $stuff} = $stuff;
-            }
-            $hint     = sprintf "# Please answer %s\n", join ' or ', map qq{`$_`}, @stuffs;
-            $message .= sprintf ' (%s)', join '/', @stuffs;
-        }
-        elsif ($type eq 'HASH' || $type eq 'REFARRAY' || $type eq 'Hash::MultiValue') {
-            $check_anyone = 1;
-            my @keys =
-                $type eq 'HASH'             ? sort { $a cmp $b } keys %$anyone :
-                $type eq 'REFARRAY'         ? do { my $i = 0; grep { ++$i % 2 == 1 } @{$$anyone} } :
-                $type eq 'Hash::MultiValue' ? $anyone->keys : ();
-            my $max = 0;
-            my $idx = 1;
-            for my $key (@keys) {
-                $max = length $key > $max ? length $key : $max;
-                $exclusive_map->{$ignore_case ? lc $key : $key} =
-                    $type eq 'REFARRAY' ? $$anyone->[$idx] : $anyone->{$key};
-                $idx += 2;
-            }
-            $hint = sprintf "# Please answer %s\n", join ' or ',map qq{`$_`}, @keys;
-            if ($opts->{verbose}) {
-                my $idx = -1;
-                $message = sprintf '%s%s', join('', map {
-                    $idx += 2;
-                    sprintf "# %-*s => %s\n", $max, $_,
-                        $type eq 'REFARRAY' ? $$anyone->[$idx] : $anyone->{$_};
-                } @keys), $message;
-            }
-            else {
-                $message .= sprintf ' (%s)', join '/', @keys;
-            }
-        }
-    }
-    elsif ($opts->{regexp}) {
-        $regexp = ref $opts->{regexp} eq 'Regexp' ? $opts->{regexp}
-            : $ignore_case ? qr/$opts->{regexp}/i : qr/$opts->{regexp}/;
-        $hint   = sprintf "# Please answer pattern %s\n", $regexp;
-        $regexp = qr/\A $regexp \Z/x;
-    }
-
-    my $encoder = $opts->{encode} ? do {
-        require Encode;
-        Encode::find_encoding($opts->{encode});
-    } : undef;
+    my ($in, $out) = @$stash{qw/in out/};
 
     # autoflush and reset format for output
     my $org_out = select $out;
@@ -92,12 +35,12 @@ sub prompt {
     local $\;
     select $org_out;
 
-    my $isa_tty = _isa_tty($in, $out);
-    my $use_default = $opts->{use_default} ? 1 : 0;
+    my $ignore_case = $opts->{ignore_case} ? 1 : 0;
+    my $isa_tty     = _isa_tty($in, $out);
     my $answer;
     while (1) {
-        print {$out} "$message $display_default";
-        if ($ENV{PERL_IOPS_USE_DEFAULT} || $use_default || (!$isa_tty && eof $in)) {
+        print {$out} $stash->{message}, ' ', $display_default;
+        if ($ENV{PERL_IOPS_USE_DEFAULT} || $opts->{use_default} || (!$isa_tty && eof $in)) {
             print {$out} "$default\n";
             $answer = $default;
             last;
@@ -112,26 +55,97 @@ sub prompt {
         }
 
         $answer = $default if !defined $answer || $answer eq '';
-        $answer = $encoder->decode($answer) if defined $encoder;
-        if ($check_anyone) {
+        $answer = $stash->{encoder}->decode($answer) if defined $stash->{encoder};
+        if (my $exclusive_map = $stash->{exclusive_map}) {
             if (exists $exclusive_map->{$ignore_case ? lc $answer : $answer}) {
                 $answer = $exclusive_map->{$ignore_case ? lc $answer : $answer};
                 last;
             }
             $answer = undef;
-            print {$out} $hint;
+            print {$out} $stash->{hint};
             next;
         }
-        elsif ($regexp) {
+        elsif (my $regexp = $stash->{regexp}) {
             last if $answer =~ $regexp;
             $answer = undef;
-            print {$out} $hint;
+            print {$out} $stash->{hint};
             next;
         }
         last;
     }
 
     return $answer;
+}
+
+sub _parse_option {
+    my ($opts, $stash) = @_;
+
+    $stash->{in}  = _is_fh($opts->{input})  ? $opts->{input}  : *STDIN;
+    $stash->{out} = _is_fh($opts->{output}) ? $opts->{output} : *STDOUT;
+
+    if ($opts->{yn}) {
+        $opts->{anyone}       = \[y => 1, n => 0];
+        $opts->{ignore_case}  = 1 unless exists $opts->{ignore_case};
+    }
+
+    if ($opts->{anyone}) {
+        $stash->{exclusive_map} = _make_exclusive_map($opts, $stash);
+    }
+    elsif ($opts->{regexp}) {
+        $stash->{regexp} = _make_regexp($opts, $stash);
+    }
+
+    if ($opts->{encode}) {
+        require Encode;
+        $stash->{encoder} = Encode::find_encoding($opts->{encode});
+    }
+}
+
+sub _make_exclusive_map {
+    my ($opts, $stash) = @_;
+    my $anyone = $opts->{anyone};
+    my $exclusive_map = {};
+
+    my $ignore_case = $opts->{ignore_case} ? 1 : 0;
+    my ($message, $hint) = @$stash{qw/message hint/};
+    my $type = _anyone_type($anyone) || return;
+    if ($type eq 'ARRAY') {
+        my @stuffs = _uniq(@$anyone);
+        for my $stuff (@stuffs) {
+            $exclusive_map->{$ignore_case ? lc $stuff : $stuff} = $stuff;
+        }
+        $hint     = sprintf "# Please answer %s\n", join ' or ', map qq{`$_`}, @stuffs;
+        $message .= sprintf ' (%s)', join '/', @stuffs;
+    }
+    elsif ($type eq 'HASH' || $type eq 'REFARRAY' || $type eq 'Hash::MultiValue') {
+        my @keys =
+            $type eq 'HASH'             ? sort { $a cmp $b } keys %$anyone :
+            $type eq 'REFARRAY'         ? do { my $i = 0; grep { ++$i % 2 == 1 } @{$$anyone} } :
+            $type eq 'Hash::MultiValue' ? $anyone->keys : ();
+        my $max = 0;
+        my $idx = 1;
+        for my $key (@keys) {
+            $max = length $key > $max ? length $key : $max;
+            $exclusive_map->{$ignore_case ? lc $key : $key} =
+                $type eq 'REFARRAY' ? $$anyone->[$idx] : $anyone->{$key};
+            $idx += 2;
+        }
+        $hint = sprintf "# Please answer %s\n", join ' or ',map qq{`$_`}, @keys;
+        if ($opts->{verbose}) {
+            my $idx = -1;
+            $message = sprintf '%s%s', join('', map {
+                $idx += 2;
+                sprintf "# %-*s => %s\n", $max, $_,
+                    $type eq 'REFARRAY' ? $$anyone->[$idx] : $anyone->{$_};
+            } @keys), $message;
+        }
+        else {
+            $message .= sprintf ' (%s)', join '/', @keys;
+        }
+    }
+
+    @$stash{qw/message hint/} = ($message, $hint);
+    return $exclusive_map;
 }
 
 sub _anyone_type {
@@ -144,6 +158,15 @@ sub _anyone_type {
         do { blessed($anyone) || '' } eq 'Hash::MultiValue' && %$anyone
             ? 'Hash::MultiValue' : '';
     return $type;
+}
+
+sub _make_regexp {
+    my ($opts, $stash) = @_;
+    my $regexp = ref $opts->{regexp} eq 'Regexp' ? $opts->{regexp}
+        : $opts->{ignore_case} ? qr/$opts->{regexp}/i : qr/$opts->{regexp}/;
+    $stash->{hint} = sprintf "# Please answer pattern %s\n", $regexp;
+    $regexp = qr/\A $regexp \Z/x;
+    return $regexp;
 }
 
 # using IO::Interactive::is_interactive() ?
