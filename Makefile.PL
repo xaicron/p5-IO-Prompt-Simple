@@ -4,8 +4,8 @@ use Module::Install::AuthorTests;
 name 'IO-Prompt-Simple';
 all_from 'lib/IO/Prompt/Simple.pm';
 
-requires 'Hash::MultiValue';
 requires 'Encode';
+requires 'Scalar::Util';
 
 test_requires 'Test::More', 0.98;
 test_requires 'Test::Requires', 0.06;

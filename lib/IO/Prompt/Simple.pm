@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use 5.006001;
 use base 'Exporter';
+use Scalar::Util qw(blessed);
 
 our $VERSION = '0.02';
 
@@ -21,8 +22,7 @@ sub prompt {
     }
 
     if ($opts->{yn}) {
-        require Hash::MultiValue; # for preserve the order of keys.
-        $opts->{anyone}       = Hash::MultiValue->new(y => 1, n => 0);
+        $opts->{anyone}       = \[y => 1, n => 0];
         $opts->{ignore_case}  = 1 unless exists $opts->{ignore_case};
     }
 
@@ -36,7 +36,8 @@ sub prompt {
     my ($regexp, $hint);
     my ($exclusive_map, $check_anyone) = ({}, 0);
     if (my $anyone = $opts->{anyone}) {
-        if (ref $anyone eq 'ARRAY' && @$anyone) {
+        my $type = _anyone_type($anyone);
+        if ($type eq 'ARRAY') {
             $check_anyone = 1;
             my @stuffs = _uniq(@$anyone);
             for my $stuff (@stuffs) {
@@ -45,18 +46,27 @@ sub prompt {
             $hint     = sprintf "# Please answer %s\n", join ' or ', map qq{`$_`}, @stuffs;
             $message .= sprintf ' (%s)', join '/', @stuffs;
         }
-        elsif (ref $anyone eq 'HASH' || ref $anyone eq 'Hash::MultiValue' && %$anyone) {
+        elsif ($type eq 'HASH' || $type eq 'REFARRAY' || $type eq 'Hash::MultiValue') {
             $check_anyone = 1;
-            my @keys = ref $anyone eq 'Hash::MultiValue' ? $anyone->keys : sort { $a cmp $b } keys %$anyone;
+            my @keys =
+                $type eq 'HASH'             ? sort { $a cmp $b } keys %$anyone :
+                $type eq 'REFARRAY'         ? do { my $i = 0; grep { ++$i % 2 == 1 } @{$$anyone} } :
+                $type eq 'Hash::MultiValue' ? $anyone->keys : ();
             my $max = 0;
+            my $idx = 1;
             for my $key (@keys) {
                 $max = length $key > $max ? length $key : $max;
-                $exclusive_map->{$ignore_case ? lc $key : $key} = $anyone->{$key};
+                $exclusive_map->{$ignore_case ? lc $key : $key} =
+                    $type eq 'REFARRAY' ? $$anyone->[$idx] : $anyone->{$key};
+                $idx += 2;
             }
             $hint = sprintf "# Please answer %s\n", join ' or ',map qq{`$_`}, @keys;
             if ($opts->{verbose}) {
+                my $idx = -1;
                 $message = sprintf '%s%s', join('', map {
-                    sprintf "# %-*s: %s\n", $max + 2, "($_)", $anyone->{$_}
+                    $idx += 2;
+                    sprintf "# %-*s: %s\n", $max + 2, "($_)",
+                        $type eq 'REFARRAY' ? $$anyone->[$idx] : $anyone->{$_};
                 } @keys), $message;
             }
             else {
@@ -122,6 +132,18 @@ sub prompt {
     }
 
     return $answer;
+}
+
+sub _anyone_type {
+    my $anyone = shift;
+    my $type =
+        ref $anyone eq 'ARRAY' && @$anyone ? 'ARRAY' :
+        ref $anyone eq 'HASH'  && %$anyone ? 'HASH'  :
+        ref $anyone eq 'REF'   && ref $$anyone eq 'ARRAY' && @{$$anyone}
+            ? 'REFARRAY' :
+        do { blessed($anyone) || '' } eq 'Hash::MultiValue' && %$anyone
+            ? 'Hash::MultiValue' : '';
+    return $type;
 }
 
 # using IO::Interactive::is_interactive() ?
