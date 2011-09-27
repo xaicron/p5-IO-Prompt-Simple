@@ -65,7 +65,7 @@ sub prompt {
                 my $idx = -1;
                 $message = sprintf '%s%s', join('', map {
                     $idx += 2;
-                    sprintf "# %-*s: %s\n", $max + 2, "($_)",
+                    sprintf "# %-*s => %s\n", $max, $_,
                         $type eq 'REFARRAY' ? $$anyone->[$idx] : $anyone->{$_};
                 } @keys), $message;
             }
@@ -271,9 +271,9 @@ And, when you specify the verbose option, you can tell the user more information
 
 Display like are:
 
-  # bing  : http://bing.com/
-  # google: http://google.com/
-  # yahoo : http://yahoo.com/
+  # bing   => http://bing.com/
+  # google => http://google.com/
+  # yahoo  => http://yahoo.com/
   choose your homepage : [Enter]
   # Please answer `bing` or `google` or `yahoo`
   choose your homepage : google[Enter]

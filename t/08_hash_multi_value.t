@@ -30,11 +30,11 @@ b',
         anyone  => Hash::MultiValue->new(b => 'foo', a => 'bar'),
         verbose => 1,
     },
-    prompt => '# (b): foo
-# (a): bar
+    prompt => '# b => foo
+# a => bar
 prompt : # Please answer `b` or `a`
-# (b): foo
-# (a): bar
+# b => foo
+# a => bar
 prompt : ',
     desc   => 'verbose => 1',
 );
