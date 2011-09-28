@@ -1,5 +1,10 @@
 Revision history for Perl extension IO::Prompt::Simple
 
+0.03  Wed Sep 28 23:35:46 2011
+    - remove dependence on Hash::MultiValue
+    - support REF-ARRAYREF on `anyone`
+    - refactoring
+
 0.02  Fri Sep 23 01:36:12 2011
     - added `yn` option
     - support Hash::MultiValue instance for anyone

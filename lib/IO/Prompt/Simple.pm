@@ -6,7 +6,7 @@ use 5.006001;
 use base 'Exporter';
 use Scalar::Util qw(blessed);
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 our @EXPORT = 'prompt';
 
