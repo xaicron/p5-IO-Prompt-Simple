@@ -20,4 +20,12 @@ test_prompt(
     desc   => 'color (array)',
 );
 
+test_prompt(
+    input  => 'a',
+    answer => 1,
+    opts   => { color => 'red', anyone => { a => 1 }, verbose => 1 },
+    prompt => "# a => 1\n".colored(['red'], 'prompt ').': ',
+    desc   => 'do not decoration of choices',
+);
+
 done_testing;

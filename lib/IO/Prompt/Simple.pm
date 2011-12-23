@@ -50,6 +50,7 @@ sub prompt {
     my $isa_tty     = _isa_tty($in, $out);
     my $answer;
     while (1) {
+        print {$out} $stash->{choices}, "\n" if defined $stash->{choices};
         print {$out} $stash->{message}, ': ';
         if ($ENV{PERL_IOPS_USE_DEFAULT} || $opts->{use_default} || (!$isa_tty && eof $in)) {
             print {$out} "$default\n";
@@ -118,7 +119,7 @@ sub _make_exclusive_map {
     my $exclusive_map = {};
 
     my $ignore_case = $opts->{ignore_case} ? 1 : 0;
-    my ($message, $hint) = @$stash{qw/message hint/};
+    my ($message, $hint, $choices) = @$stash{qw/message hint choices/};
     my $type = _anyone_type($anyone) || return;
     if ($type eq 'ARRAY') {
         my @stuffs = _uniq(@$anyone);
@@ -144,18 +145,18 @@ sub _make_exclusive_map {
         $hint = sprintf "# Please answer %s\n", join ' or ',map qq{`$_`}, @keys;
         if ($opts->{verbose}) {
             my $idx = -1;
-            $message = sprintf '%s%s', join('', map {
+            $choices = join "\n", map {
                 $idx += 2;
-                sprintf "# %-*s => %s\n", $max, $_,
+                sprintf "# %-*s => %s", $max, $_,
                     $type eq 'REFARRAY' ? $$anyone->[$idx] : $anyone->{$_};
-            } @keys), $message;
+            } @keys;
         }
         else {
             $message .= sprintf ' (%s)', join '/', @keys;
         }
     }
 
-    @$stash{qw/message hint/} = ($message, $hint);
+    @$stash{qw/message hint choices/} = ($message, $hint, $choices);
     return $exclusive_map;
 }
 
