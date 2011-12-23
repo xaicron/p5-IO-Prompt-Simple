@@ -35,14 +35,20 @@ sub test_prompt {
     local *IO::Prompt::Simple::_isa_tty = sub { $isa_tty };
 
     note "$desc at line $line"; do {
-        my $got = prompt 'prompt', $opts;
+        my @got = prompt 'prompt', $opts;
         if (ref $prompt eq 'Regexp') {
             like $output, $prompt, 'prompt ok';
         }
         else {
             is $output, $prompt, 'prompt ok';
         }
-        is $got, $answer, 'expects ok';
+
+        if (ref $answer) {
+            is_deeply \@got, $answer, 'expects ok';
+        }
+        else {
+            is $got[0], $answer, 'expects ok';
+        }
     };
 }
 

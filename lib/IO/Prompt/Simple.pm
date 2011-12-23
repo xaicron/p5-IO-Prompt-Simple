@@ -49,6 +49,7 @@ sub prompt {
     my $ignore_case = $opts->{ignore_case} ? 1 : 0;
     my $isa_tty     = _isa_tty($in, $out);
     my $answer;
+    my @answers; # for multi
     while (1) {
         print {$out} $stash->{choices}, "\n" if defined $stash->{choices};
         print {$out} $stash->{message}, ': ';
@@ -69,11 +70,27 @@ sub prompt {
         $answer = $default if !defined $answer || $answer eq '';
         $answer = $stash->{encoder}->decode($answer) if defined $stash->{encoder};
         if (my $exclusive_map = $stash->{exclusive_map}) {
-            if (exists $exclusive_map->{$ignore_case ? lc $answer : $answer}) {
-                $answer = $exclusive_map->{$ignore_case ? lc $answer : $answer};
-                last;
+            if ($stash->{want_multi}) {
+                $answer = $ignore_case ? lc $answer : $answer;
+                my $has_error;
+                for my $ans (split /\s+/, $answer) {
+                    unless (exists $exclusive_map->{$ans}) {
+                        $has_error = 1;
+                        last;
+                    }
+                    push @answers, $exclusive_map->{$ans};
+                }
+                $has_error = 1 unless @answers;
+                last unless $has_error;
             }
-            $answer = undef;
+            else {
+                if (exists $exclusive_map->{$ignore_case ? lc $answer : $answer}) {
+                    $answer = $exclusive_map->{$ignore_case ? lc $answer : $answer};
+                    last;
+                }
+            }
+            @answers = ();
+            $answer  = undef;
             print {$out} $stash->{hint};
             next;
         }
@@ -86,7 +103,7 @@ sub prompt {
         last;
     }
 
-    return $answer;
+    return $stash->{want_multi} ? @answers : $answer;
 }
 
 sub _parse_option {
@@ -100,8 +117,10 @@ sub _parse_option {
         $opts->{ignore_case}  = 1 unless exists $opts->{ignore_case};
     }
 
+    $opts->{anyone} ||= $opts->{choices};
     if ($opts->{anyone}) {
         $stash->{exclusive_map} = _make_exclusive_map($opts, $stash);
+        $stash->{want_multi}    = $opts->{multi} ? 1 : 0;
     }
     elsif ($opts->{regexp}) {
         $stash->{regexp} = _make_regexp($opts, $stash);
@@ -324,6 +343,54 @@ If you want preserve the order of keys, you can use L<< Hash::MultiValue >>.
 Or, you can use REF-ARRAYREF.
 
   $answer = prompt 'foo', { anyone => \[b => 1, c => 2, a => 4] };
+
+=item choices
+
+Alias of C<< anyone >>
+
+=item multi: BOOL
+
+Returned multiple answers. Your answer are evaluated separated by space.
+
+  use Data::Dumper;
+  @answers = prompt 'choices', {
+      choices => [qw/a b c/],
+      multi   => 1,
+  };
+  print Dumper \@answers;
+
+Display like are:
+
+  choices (a/b/c) : c a[Enter]
+  $VAR1 = [
+            'c',
+            'a'
+          ];
+
+Or, you can specify HASHREF:
+
+  use Data::Dumper;
+  @answers = prompt 'choices', {
+      choices => {
+          google => 'http://google.com/',
+          yahoo  => 'http://yahoo.com/',
+          bing   => 'http://bing.com/',
+      },
+      verbose => 1,
+      multi   => 1,
+  };
+  print Dumper \@answers;
+
+Display like are:
+
+  # bing   => http://bing.com/
+  # google => http://google.com/
+  # yahoo  => http://yahoo.com/
+  choices: google yahoo[Enter]
+  $VAR1 = [
+            'http://google.com/',
+            'http://yahoo.com/'
+          ];
 
 =item regexp: STR | REGEXP
 
