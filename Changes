@@ -1,5 +1,8 @@
 Revision history for Perl extension IO::Prompt::Simple
 
+0.04  Sat Dec 24 02:51:19 2011
+    - added `color` and `choices` and `multi` option
+
 0.03  Wed Sep 28 23:35:46 2011
     - remove dependence on Hash::MultiValue
     - support REF-ARRAYREF on `anyone`
