@@ -5,6 +5,11 @@ use warnings;
 use 5.006001;
 use base 'Exporter';
 use Scalar::Util qw(blessed);
+use Term::ANSIColor qw(colored);
+
+BEGIN {
+    $ENV{ANSI_COLORS_DISABLED} = 1 if $^O eq 'MSWin32';
+}
 
 our $VERSION = '0.03';
 
@@ -21,11 +26,17 @@ sub prompt {
     else {
         ($default, $opts) = ($opts, {});
     }
-    my $display_default = defined $default ? "[$default]: " : ': ';
+    my $display_default = defined $default ? "[$default]" : '';
     $default = defined $default ? $default : '';
 
     my $stash = { message => $message };
     _parse_option($opts, $stash);
+
+    $stash->{message} .= " $display_default";
+    if (my $color = $opts->{color}) {
+        $color = [$color] unless ref $color eq 'ARRAY';
+        $stash->{message} = colored $color, $stash->{message};
+    }
 
     my ($in, $out) = @$stash{qw/in out/};
 
@@ -39,7 +50,7 @@ sub prompt {
     my $isa_tty     = _isa_tty($in, $out);
     my $answer;
     while (1) {
-        print {$out} $stash->{message}, ' ', $display_default;
+        print {$out} $stash->{message}, ': ';
         if ($ENV{PERL_IOPS_USE_DEFAULT} || $opts->{use_default} || (!$isa_tty && eof $in)) {
             print {$out} "$default\n";
             $answer = $default;
@@ -379,6 +390,12 @@ Sets output file handle (default: STDOUT)
 =item encode: STR | Encoder
 
 Sets encoding. If specified, returned a decoded string.
+
+=item color: STR | ARRAYREF
+
+Sets prompt color. Using L<< Term::ANSIColor >>.
+
+  $answer = prompt 'colored prompting', { color => [qw/red on_white/] };
 
 =back
 
