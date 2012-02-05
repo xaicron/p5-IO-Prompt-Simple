@@ -485,7 +485,7 @@ xaicron E<lt>xaicron {at} cpan.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2011 - xaicron
+Copyright 2012 - xaicron
 
 =head1 LICENSE
 
