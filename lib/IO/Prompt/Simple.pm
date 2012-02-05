@@ -4,8 +4,6 @@ use strict;
 use warnings;
 use 5.006001;
 use base 'Exporter';
-use Scalar::Util qw(blessed);
-use Term::ANSIColor qw(colored);
 
 BEGIN {
     $ENV{ANSI_COLORS_DISABLED} = 1 if $^O eq 'MSWin32';
@@ -34,8 +32,9 @@ sub prompt {
 
     $stash->{message} .= " $display_default";
     if (my $color = $opts->{color}) {
+        require Term::ANSIColor;
         $color = [$color] unless ref $color eq 'ARRAY';
-        $stash->{message} = colored $color, $stash->{message};
+        $stash->{message} = Term::ANSIColor::colored($color, $stash->{message});
     }
 
     my ($in, $out) = @$stash{qw/in out/};
@@ -186,7 +185,10 @@ sub _anyone_type {
         ref $anyone eq 'HASH'  && %$anyone ? 'HASH'  :
         ref $anyone eq 'REF'   && ref $$anyone eq 'ARRAY' && @{$$anyone}
             ? 'REFARRAY' :
-        do { blessed($anyone) || '' } eq 'Hash::MultiValue' && %$anyone
+        do {
+            require Scalar::Util;
+            Scalar::Util::blessed($anyone) || ''
+        } eq 'Hash::MultiValue' && %$anyone
             ? 'Hash::MultiValue' : '';
     return $type;
 }
