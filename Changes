@@ -1,5 +1,8 @@
 Revision history for Perl extension IO::Prompt::Simple
 
+0.05  Sun Feb  5 19:55:09 2012
+    - lazy loading for dependent modules
+
 0.04  Sat Dec 24 02:51:19 2011
     - added `color` and `choices` and `multi` option
 
