@@ -1,5 +1,8 @@
 Revision history for Perl extension IO::Prompt::Simple
 
+0.06  Mon Oct 22 01:23:33 2012
+    - repacking (suggested by miyagawa++)
+
 0.05  Sun Feb  5 19:55:09 2012
     - lazy loading for dependent modules
 

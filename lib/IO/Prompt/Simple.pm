@@ -9,7 +9,7 @@ BEGIN {
     $ENV{ANSI_COLORS_DISABLED} = 1 if $^O eq 'MSWin32';
 }
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 our @EXPORT = 'prompt';
 
