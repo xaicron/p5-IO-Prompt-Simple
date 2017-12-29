@@ -1,7 +1,8 @@
 use strict;
 use warnings;
 use Test::More;
-use t::Util;
+use lib "./t";
+use Util;
 
 test_prompt(
     input  => 'foo bar',

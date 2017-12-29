@@ -1,7 +1,8 @@
 use strict;
 use warnings;
 use Test::More;
-use t::Util;
+use lib "./t";
+use Util;
 use Term::ANSIColor qw(colored);
 
 test_prompt(
