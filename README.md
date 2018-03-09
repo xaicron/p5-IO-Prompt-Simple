@@ -243,7 +243,7 @@ xaicron &lt;xaicron {at} gmail.com>
 
 # COPYRIGHT
 
-Copyright Yuji Shimada (@xaicron).
+Copyright (C) 2011 Yuji Shimada (@xaicron).
 
 # LICENSE
 
