@@ -485,7 +485,7 @@ xaicron E<lt>xaicron {at} gmail.comE<gt>
 
 =head1 COPYRIGHT
 
-Copyright Yuji Shimada (@xaicron).
+Copyright (C) 2011 Yuji Shimada (@xaicron).
 
 =head1 LICENSE
 
