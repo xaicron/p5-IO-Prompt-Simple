@@ -1,5 +1,5 @@
 name = "IO-Prompt-Simple"
-# badges = ["travis"]
+badges = ["travis"]
 authority="cpan:XAICRON"
 
 module_maker="ModuleBuildTiny"

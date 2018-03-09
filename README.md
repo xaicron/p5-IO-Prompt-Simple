@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/xaicron/p5-IO-Prompt-Simple.svg?branch=master)](https://travis-ci.org/xaicron/p5-IO-Prompt-Simple)
 # NAME
 
 IO::Prompt::Simple - provide a simple user input
