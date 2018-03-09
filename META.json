@@ -1,7 +1,7 @@
 {
    "abstract" : "provide a simple user input",
    "author" : [
-      "xaicron <xaicron {at} cpan.org>"
+      "xaicron <xaicron {at} gmail.com>"
    ],
    "dynamic_config" : 0,
    "generated_by" : "Minilla/v3.0.16, CPAN::Meta::Converter version 2.150010",

@@ -239,11 +239,11 @@ This prevents automated processes from blocking on user input.
 
 # AUTHOR
 
-xaicron &lt;xaicron {at} cpan.org>
+xaicron &lt;xaicron {at} gmail.com>
 
 # COPYRIGHT
 
-Copyright 2011 - 2012 xaicron.
+Copyright Yuji Shimada (@xaicron).
 
 # LICENSE
 
