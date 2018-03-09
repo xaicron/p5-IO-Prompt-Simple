@@ -1,5 +1,7 @@
 Revision history for Perl extension IO::Prompt::Simple
 
+{{$NEXT}}
+
 0.06  Mon Oct 22 01:23:33 2012
     - repacking (suggested by miyagawa++)
 

@@ -18,3 +18,11 @@ xs/*obj
 *.old
 dll*
 *~
+/IO-Prompt-Simple-*
+/.build
+/_build_params
+/Build
+/Build.bat
+!Build/
+!META.json
+!LICENSE
